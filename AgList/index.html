@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caixa Mestre</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* Reset e Estilos Globais */
+        :root {
+            --cor-fundo: #f3f4f6; /* Fundo cinza claro */
+            --cor-texto: #1f2937; /* Texto escuro padrão */
+            --cor-fundo-card: #ffffff; /* Fundo dos cards branco */
+            --cor-borda: #e5e7eb; /* Borda cinza claro */
+            --cor-sombra: rgba(0, 0, 0, 0.08); /* Sombra mais suave */
+            --cor-sombra-hover: rgba(0, 0, 0, 0.12); /* Sombra mais forte no hover */
+
+            /* Paleta de Cores Refinada */
+            --cor-header-bg: #4A00B7; /* Roxo escuro para o header */
+            --cor-header-text: #ffffff; /* Texto branco no header */
+            --cor-primaria: #00BF63; /* Verde vibrante para sucesso e botões */
+            --cor-primaria-hover: #00A957;
+            --cor-secundaria: #EF4444; /* Vermelho para débitos e alerta */
+            --cor-secundaria-hover: #d83a3aed;
+            --cor-terciaria: #3B82F6; /* Azul para ações secundárias */
+            --cor-terciaria-hover: #2972E3;
+            --cor-destaque-amarelo: #ffb300; /* Amarelo para juros */
+            
+            --cor-texto-fraco: #6b7280; /* Texto cinza fraco */
+            --cor-icone: #ffffff; /* Cor padrão para ícones no header */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-family: inherit;
+            font-size: inherit;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+        
+        button:active {
+            opacity: 0.8;
+        }
+
+        input, select {
+            font-family: inherit;
+            font-size: inherit;
+            border: 1px solid var(--cor-borda);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            width: 100%;
+            background-color: #f9fafb;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--cor-terciaria);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Estilo para Range Input (Volume Slider) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: var(--cor-borda);
+            border-radius: 5px;
+            outline: none;
+            padding: 0;
+            margin: 0.5rem 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--cor-terciaria);
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--cor-terciaria);
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+
+
+        /* Estrutura Principal */
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .tela {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background-color: var(--cor-header-bg);
+            color: var(--cor-header-text);
+            box-shadow: 0 2px 4px var(--cor-sombra);
+            position: relative;
+            z-index: 10;
+            gap: 1rem;
+        }
+        
+        .header-logo-titulo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; 
+        }
+        .header-logo-titulo img {
+             height: 30px; 
+        }
+
+        .header-titulo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+            flex-shrink: 0;
+        }
+        
+        .header-botoes {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; 
+        }
+
+        .header > button:first-child, .header-botoes button {
+            color: var(--cor-icone);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .header > button:first-child:hover, .header-botoes button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .header input[type="date"] {
+            max-width: 40%;
+            min-width: 140px;
+            padding: 0.5rem;
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--cor-header-text);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .header input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+
+        .conteudo {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        /* Botão Flutuante de Adicionar */
+        .btn-add {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            background-color: var(--cor-primaria);
+            color: white;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .btn-add:hover {
+            transform: scale(1.05);
+        }
+        .btn-add:active {
+            background-color: var(--cor-primaria-hover);
+        }
+
+        /* Tela de Lista de Devedores */
+        .filtros-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+        .filtros-container .campo-busca {
+            flex-grow: 1;
+            margin: 0;
+            min-width: 100px;
+        }
+        .filtros-container select {
+            flex-shrink: 0;
+            max-width: 150px;
+        }
+        .card-pessoa {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem;
+            background-color: var(--cor-fundo-card);
+            border-radius: 1rem;
+            box-shadow: 0 2px 4px var(--cor-sombra);
+            margin-bottom: 1rem;
+            width: 100%;
+            text-align: left;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-pessoa:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--cor-sombra-hover);
+        }
+        .card-pessoa-info h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .card-pessoa-info p {
+            color: var(--cor-texto-fraco);
+            margin: 0.25rem 0 0;
+        }
+        .card-pessoa-debito {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--cor-secundaria);
+        }
+        .mensagem-vazio {
+            text-align: center;
+            color: var(--cor-texto-fraco);
+            margin-top: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        .menu-dropdown {
+            position: absolute;
+            top: 4.8rem;
+            left: 1rem;
+            background-color: var(--cor-fundo-card);
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 20;
+        }
+        .menu-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .menu-dropdown button:hover {
+            background-color: var(--cor-fundo);
+        }
+
+        /* Tela de Detalhes da Pessoa */
+        .header-detalhes {
+            text-align: center;
+            flex-grow: 1;
+        }
+        .header-detalhes h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--cor-header-text);
+        }
+        .header-detalhes p {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        .resumo-debito {
+            padding: 1.5rem;
+            background-color: var(--cor-fundo-card);
+            border-radius: 1rem;
+            box-shadow: 0 2px 4px var(--cor-sombra);
+            margin: 1rem;
+            text-align: center;
+        }
+        .resumo-debito .label {
+            font-size: 0.875rem;
+            color: var(--cor-texto-fraco);
+        }
+        .resumo-debito .valor-total {
+            font-size: 2.25rem;
+            font-weight: bold;
+            color: var(--cor-secundaria);
+            margin: 0;
+        }
+        .resumo-debito .juros-total {
+            font-size: 0.875rem;
+            color: var(--cor-texto-fraco);
+            margin-top: 0.5rem;
+        }
+        .titulo-historico {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin: 0.5rem 0 1rem;
+        }
+        .card-transacao {
+            background-color: var(--cor-fundo-card);
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px var(--cor-sombra);
+            overflow: hidden;
+        }
+        .card-transacao.pago {
+            background-color: rgb(182, 255, 204);
+        }
+        .transacao-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 1rem;
+            transition: background-color 0.2s ease;
+        }
+        .transacao-header:hover {
+            background-color: #f9fafb;
+        }
+        .card-transacao.pago .transacao-header:hover {
+            background-color: #e4f9ec;
+        }
+        .transacao-data {
+            font-size: 0.875rem;
+            color: var(--cor-texto-fraco);
+        }
+        .transacao-valores {
+            text-align: right;
+        }
+        .transacao-valores .valor {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: var(--cor-secundaria);
+        }
+        .card-transacao.pago .transacao-valores .valor {
+            color: var(--cor-primaria);
+            text-decoration: line-through;
+        }
+        .transacao-valores .detalhe {
+            font-size: 0.875rem;
+            color: var(--cor-texto-fraco);
+        }
+        .transacao-opcoes {
+            display: none;
+            justify-content: space-around;
+            padding: 0 1rem 1rem 1rem;
+            border-top: 1px solid var(--cor-borda);
+            gap: 0.5rem;
+        }
+        .transacao-opcoes.visivel {
+            display: flex;
+            padding-top: 1rem; 
+        }
+        .transacao-opcoes button {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-pagou { background-color: var(--cor-primaria); }
+        .btn-pagou:hover { background-color: var(--cor-primaria-hover); }
+        .btn-desfazer { background-color: var(--cor-secundaria); }
+        .btn-desfazer:hover { background-color: var(--cor-secundaria-hover); }
+        .btn-editar { background-color: var(--cor-terciaria); }
+        .btn-editar:hover { background-color: var(--cor-terciaria-hover); }
+
+        /* Tela de Notificações */
+        .card-notificacao {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: var(--cor-fundo-card);
+            border-radius: 1rem;
+            box-shadow: 0 2px 4px var(--cor-sombra);
+            margin-bottom: 1rem;
+            border-left: 5px solid transparent; 
+            transition: all 0.2s ease;
+        }
+        .card-notificacao.pago {
+            background-color: #b5ffcb; 
+            border-left: 5px solid var(--cor-primaria);
+        }
+        .notificacao-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-grow: 1;
+            text-align: left;
+        }
+        .notificacao-info .icone {
+            font-size: 1.5rem;
+        }
+        .notificacao-info p { margin: 0; }
+        .notificacao-info strong { font-size: 1.1rem; }
+        .notificacao-info .profissao { color: var(--cor-texto-fraco); font-size: 0.875rem; }
+        
+        .notificacao-juros-valor {
+            font-size: 1.1rem; 
+            font-weight: bold;
+            color: var(--cor-destaque-amarelo);
+            margin-top: 0.25rem;
+        }
+
+        .notificacao-botoes button {
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        .btn-pagou-juros { background-color: var(--cor-terciaria); }
+        .btn-desfazer-juros { background-color: var(--cor-secundaria); }
+        
+        /* Tela de Prancheta */
+        .prancheta-textarea {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--cor-borda);
+            background-color: var(--cor-fundo-card);
+            resize: none;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        /* Tela de Configurações */
+        .config-card {
+            background-color: var(--cor-fundo-card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 2px 4px var(--cor-sombra);
+            margin-bottom: 1rem;
+        }
+        .config-card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 1.5rem;
+            border-bottom: 1px solid var(--cor-borda);
+            padding-bottom: 1rem;
+        }
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .config-item label {
+            font-weight: 500;
+        }
+        .config-opcoes-radio {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+        }
+        .config-card label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .config-botoes-geral {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .config-botoes-geral button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--cor-terciaria);
+        }
+        .config-botoes-geral button:hover {
+             background-color: var(--cor-terciaria-hover);
+        }
+        .btn-apagar-tudo-discreto {
+            display: block;
+            width: 100%;
+            text-align: center;
+            color: var(--cor-secundaria);
+            margin-top: 1.5rem;
+            padding: 0.5rem;
+            background-color: transparent;
+            text-decoration: underline;
+        }
+        .app-version {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--cor-texto-fraco);
+            padding: 1rem;
+        }
+
+        /* Modal */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInScaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .modal-container {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-conteudo {
+            background-color: var(--cor-fundo-card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: fadeInScaleUp 0.3s ease-out forwards;
+        }
+        .modal-titulo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 0 0 1.5rem;
+        }
+        .modal-conteudo .campo {
+            margin-bottom: 1rem;
+        }
+        .modal-conteudo label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--cor-texto-fraco);
+            margin-bottom: 0.5rem;
+        }
+        .modal-botoes {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .modal-botoes button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            color: white;
+        }
+        .btn-salvar { background-color: var(--cor-primaria); }
+        .btn-salvar:hover { background-color: var(--cor-primaria-hover); }
+        .btn-cancelar { background-color: var(--cor-texto-fraco); }
+        .btn-cancelar:hover { background-color: var(--cor-texto); }
+        
+        /* Utilitários */
+        .hidden {
+            display: none !important;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <input type="file" id="import-file-input" class="hidden" accept=".json">
+
+    <script type="text/javascript">
+        // --- ÍCONES SVG ---
+        const icons = {
+            menu: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
+            search: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+            notifications: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`,
+            clipboard: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>`,
+            arrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
+            arrowUp: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`,
+            arrowDown: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
+            paid: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00BF63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+            pending: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFB700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
+            empty: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color: var(--cor-borda);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`
+        }
+
+        // --- EFEITOS SONOROS ---
+        const sounds = {
+            pop: new Audio('data:audio/mpeg;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU'+'dotOgg/8/f//9/f//9/f//9/f//9/f//8='),
+            click: new Audio('data:audio/mpeg;base64,UklGRkYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQIAAABr/8A/gUEAQUH')
+        };
+        
+        const playSound = (soundName) => {
+            if (configuracoes.soundEnabled && sounds[soundName]) {
+                sounds[soundName].volume = configuracoes.soundVolume;
+                sounds[soundName].play().catch(e => console.error("Erro ao tocar som:", e));
+            }
+        };
+
+
+        // --- FUNÇÃO HELPER PARA DATA LOCAL ---
+        const getLocalDateString = () => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); 
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        // --- Variáveis globais para o estado da aplicação ---
+        let telaAtual = 'listaDevedores';
+        let pessoaSelecionada = null;
+        let pessoas = [];
+        let modalAberto = null;
+        let transacaoParaEditar = null;
+        let jurosParaConfirmar = null;
+        let dataNotificacao = getLocalDateString();
+        let showOptions = {};
+        let showMenu = false;
+        let showBuscaLista = false;
+        let searchTerm = '';
+        let showBuscaDetalhes = false;
+        let searchDate = '';
+        let configuracoes = {
+            modoJuros: 'manual',
+            taxaJurosPadrao: 2.0,
+            soundEnabled: true,
+            soundVolume: 0.2,
+        };
+        const appVersion = 'v24.3-audio-fix';
+        
+        // --- FUNÇÕES DE PERSISTÊNCIA (localStorage) ---
+        const carregarDadosDoLocalStorage = () => {
+            try {
+                const pessoasSalvas = localStorage.getItem('pessoas');
+                const configSalvas = localStorage.getItem('configuracoes');
+                if (pessoasSalvas) {
+                    pessoas = JSON.parse(pessoasSalvas);
+                }
+                if (configSalvas) {
+                    configuracoes = { ...configuracoes, ...JSON.parse(configSalvas) };
+                }
+            } catch (e) {
+                console.error("Erro ao carregar dados do localStorage:", e);
+            }
+        };
+
+        const salvarDadosNoLocalStorage = () => {
+            localStorage.setItem('pessoas', JSON.stringify(pessoas));
+            localStorage.setItem('configuracoes', JSON.stringify(configuracoes));
+        };
+        
+        // --- FUNÇÕES DE LÓGICA DO APLICATIVO ---
+        const calcularDebitoAtual = (transacoes) => {
+            let totalPrincipal = 0;
+            let totalJuros = 0;
+            (transacoes || []).forEach(t => {
+                if (!t.pago) {
+                    totalPrincipal += t.valorOriginal;
+                    totalJuros += t.juros;
+                }
+            });
+            return {
+                debitoTotal: totalPrincipal + totalJuros,
+                jurosTotal: totalJuros
+            };
+        };
+        
+        const abrirModal = (modalName, data = null) => {
+            modalAberto = modalName;
+            
+            if (modalName === 'editarTransacao' || modalName === 'confirmarPagamento' || modalName === 'desfazerPagamento') {
+                transacaoParaEditar = data;
+            }
+             if (modalName === 'confirmarPagamentoJuros' || modalName === 'desfazerPagamentoJuros') {
+                jurosParaConfirmar = data;
+            }
+
+            playSound('pop');
+            render();
+        }
+
+        // --- LÓGICA DE NAVEGAÇÃO E HISTÓRICO ---
+        const navegarPara = (novaTela, options = {}) => {
+            playSound('click');
+            telaAtual = novaTela;
+            
+            // Limpa estados específicos ao navegar
+            showMenu = false;
+            showBuscaLista = false;
+            showBuscaDetalhes = false;
+            searchTerm = '';
+            searchDate = '';
+
+            if (options.limparSelecao) {
+                pessoaSelecionada = null;
+                showOptions = {};
+            }
+
+            // Adiciona um novo estado ao histórico do navegador
+            history.pushState({ tela: novaTela }, '', `#${novaTela}`);
+            render();
+        };
+
+        // Escuta o evento de 'voltar' do navegador/celular
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.tela) {
+                telaAtual = event.state.tela;
+                // Se voltamos para a tela principal, limpa a pessoa selecionada
+                if (telaAtual === 'listaDevedores') {
+                    pessoaSelecionada = null;
+                    showOptions = {};
+                }
+                render();
+            } else if (!event.state) {
+                 // Caso especial para a primeira página
+                telaAtual = 'listaDevedores';
+                pessoaSelecionada = null;
+                showOptions = {};
+                render();
+            }
+        });
+
+
+        const render = () => {
+            const appDiv = document.getElementById('app');
+            const scrollTop = appDiv.querySelector('.conteudo')?.scrollTop || 0;
+
+            appDiv.innerHTML = '';
+            
+            const screen = renderScreen();
+            appDiv.appendChild(screen);
+
+            if (telaAtual === 'listaDevedores') {
+                renderPessoasList();
+            }
+
+            if (modalAberto) {
+                appDiv.appendChild(renderModal());
+            }
+
+            const newConteudo = appDiv.querySelector('.conteudo');
+            if (newConteudo) newConteudo.scrollTop = scrollTop;
+        };
+
+        const renderScreen = () => {
+            switch (telaAtual) {
+                case 'listaDevedores': return renderTelaListaDevedores();
+                case 'detalhesPessoa': return renderTelaDetalhesPessoa();
+                case 'notificacoes': return renderTelaNotificacoes();
+                case 'prancheta': return renderTelaPrancheta();
+                case 'configuracoes': return renderTelaConfiguracoes();
+                default: return renderTelaListaDevedores();
+            }
+        };
+
+        // --- RENDERIZAÇÃO DAS TELAS ---
+        
+        const renderPessoasList = () => {
+            const container = document.getElementById('lista-pessoas-container');
+            if (!container) return; 
+            container.innerHTML = '';
+            
+            let pessoasProcessadas = pessoas.map(p => ({
+                ...p,
+                debitoTotal: calcularDebitoAtual(p.transacoes).debitoTotal,
+                criadoEm: p.criadoEm || new Date(0).toISOString()
+            }));
+
+            pessoasProcessadas.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+
+            const pessoasFiltradas = pessoasProcessadas.filter(p => p.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+
+            if (pessoasFiltradas.length === 0) {
+                container.innerHTML = `<div class="mensagem-vazio">${icons.empty}<p>Nenhuma pessoa encontrada. Clique no '+' para adicionar.</p></div>`;
+            } else {
+                pessoasFiltradas.forEach(pessoa => {
+                    const card = document.createElement('button');
+                    card.className = 'card-pessoa';
+                    card.innerHTML = `
+                        <div class="card-pessoa-info">
+                            <h2>${pessoa.nome}</h2>
+                            <p>${pessoa.profissao || 'Profissão não informada'}</p>
+                        </div>
+                        <p class="card-pessoa-debito">R$ ${pessoa.debitoTotal.toFixed(2).replace('.', ',')}</p>
+                    `;
+                    card.onclick = () => {
+                        pessoaSelecionada = pessoas.find(pOriginal => pOriginal.id === pessoa.id);
+                        navegarPara('detalhesPessoa');
+                    };
+                    container.appendChild(card);
+                });
+            }
+        };
+
+        const renderTelaListaDevedores = () => {
+            const tela = document.createElement('div');
+            tela.className = 'tela';
+            
+            const header = document.createElement('header');
+            header.className = 'header';
+            header.innerHTML = `
+                <button id="menu-btn"><span class="sr-only">Menu</span>${icons.menu}</button>
+                
+                <div class="header-logo-titulo">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA2UlEQVR4nO3VLw7CMByG4VoEZmonwOLJSCZZUCiSHQEuwSFAoPBcAo6AxQ7UJIagXtKkCUtA9M8PGmBfsixd+/VR7ZRqo5QCxsCZ8JyAwgXWBalULrBopOGNeT4KH4Eu0AEO74JHwBq4mrF+9xtre8DFzN2ALTCRgHPzLQUWQPlifWnmUjPOJeCZdfHRn0vASw94JQHvPOC9BFx7wLUEHJzvg62LoX2ekzl0h5JwUFzgaL/FQgiv9F1vDUcLMAUSgX0SvZdLQTR/AQ/02Y8BZ82LxAVuz/Hv5A6ApzWLt36wkgAAAABJRU5ErkJggg==" alt="Caixa Mestre Logo">
+                    <h1 class="header-titulo">Caixa Mestre</h1>
+                </div>
+
+                <div class="header-botoes">
+                    <button id="busca-btn"><span class="sr-only">Buscar</span>${icons.search}</button>
+                    <button id="notificacoes-btn"><span class="sr-only">Notificações</span>${icons.notifications}</button>
+                </div>
+            `;
+            tela.appendChild(header);
+
+            if (showMenu) {
+                const menu = document.createElement('div');
+                menu.className = 'menu-dropdown';
+                menu.innerHTML = `<button id="config-btn">Configurações</button>`;
+                tela.appendChild(menu);
+            }
+
+            const conteudo = document.createElement('main');
+            conteudo.className = 'conteudo';
+
+            const filtrosHTML = `
+                <div class="filtros-container" id="filtros-container" style="display: ${showBuscaLista ? 'flex' : 'none'};">
+                    <input id="search-input" class="campo-busca" placeholder="Buscar por nome..." value="${searchTerm}">
+                </div>
+            `;
+            conteudo.innerHTML = filtrosHTML + '<div id="lista-pessoas-container"></div>';
+            tela.appendChild(conteudo);
+
+            const addButton = document.createElement('button');
+            addButton.className = 'btn-add';
+            addButton.innerHTML = `+<span class="sr-only">Adicionar Pessoa</span>`;
+            addButton.onclick = () => abrirModal('adicionarPessoa');
+            tela.appendChild(addButton);
+            
+            setTimeout(() => {
+                document.getElementById('notificacoes-btn').onclick = () => navegarPara('notificacoes');
+                document.getElementById('busca-btn').onclick = () => { 
+                    playSound('click');
+                    showBuscaLista = !showBuscaLista;
+                    if (!showBuscaLista) searchTerm = '';
+                    render(); // Apenas re-renderiza, não navega
+                };
+                document.getElementById('menu-btn').onclick = () => { playSound('click'); showMenu = !showMenu; render(); };
+                if (showMenu) {
+                    document.getElementById('config-btn').onclick = () => navegarPara('configuracoes');
+                }
+                
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.oninput = (e) => { 
+                        searchTerm = e.target.value; 
+                        renderPessoasList();
+                    };
+                }
+            }, 0);
+
+            return tela;
+        };
+
+        const renderTelaDetalhesPessoa = () => {
+            const tela = document.createElement('div');
+            tela.className = 'tela';
+
+            const { debitoTotal, jurosTotal } = calcularDebitoAtual(pessoaSelecionada.transacoes);
+
+            const header = document.createElement('header');
+            header.className = 'header';
+            header.innerHTML = `
+                <button id="back-btn">${icons.arrowLeft}</button>
+                <div class="header-detalhes">
+                    <h1>${pessoaSelecionada.nome}</h1>
+                    <p>${pessoaSelecionada.profissao || ''}</p>
+                </div>
+                <div class="header-botoes">
+                    <button id="prancheta-btn">${icons.clipboard}</button>
+                    <button id="busca-detalhes-btn">${icons.search}</button>
+                </div>
+            `;
+            tela.appendChild(header);
+
+            const resumo = document.createElement('div');
+            resumo.className = 'resumo-debito';
+            resumo.innerHTML = `
+                <p class="label">Débito Total:</p>
+                <p class="valor-total">R$ ${debitoTotal.toFixed(2).replace('.', ',')}</p>
+                <p class="juros-total">Juros Total: R$ ${jurosTotal.toFixed(2).replace('.', ',')}</p>
+            `;
+            tela.appendChild(resumo);
+
+            const conteudo = document.createElement('main');
+            conteudo.className = 'conteudo';
+            conteudo.innerHTML = `<h2 class="titulo-historico">Histórico de Transações</h2>`;
+
+            if (showBuscaDetalhes) {
+                const searchInput = document.createElement('input');
+                searchInput.id = 'search-date-input';
+                searchInput.className = 'campo-busca';
+                searchInput.type = 'date';
+                searchInput.value = searchDate;
+                conteudo.appendChild(searchInput);
+            }
+
+            const transacoes = (pessoaSelecionada.transacoes || []).filter(t => t.data.includes(searchDate));
+
+            if (transacoes.length > 0) {
+                transacoes.forEach((transacao, index) => {
+                    const card = document.createElement('div');
+                    card.className = `card-transacao ${transacao.pago ? 'pago' : ''}`;
+                    card.innerHTML = `
+                        <button class="transacao-header">
+                            <div class="transacao-info">
+                                <p class="transacao-data">Vencimento: ${new Date(transacao.due_date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                <p class="transacao-data">Emprestado: ${new Date(transacao.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                            </div>
+                            <div class="transacao-valores">
+                                <p class="valor">R$ ${(transacao.valorOriginal + transacao.juros).toFixed(2).replace('.', ',')}</p>
+                                <p class="detalhe">Juros: R$ ${transacao.juros.toFixed(2).replace('.', ',')}</p>
+                            </div>
+                            <span>${showOptions[transacao.id] ? icons.arrowUp : icons.arrowDown}</span>
+                        </button>
+                        <div id="options-${transacao.id}" class="transacao-opcoes ${showOptions[transacao.id] ? 'visivel' : ''}">
+                            ${transacao.pago
+                                ? `<button id="undo-paid-btn-${index}" class="btn-desfazer">Desfazer</button>`
+                                : `<button id="paid-btn-${index}" class="btn-pagou">Pagou!</button>`
+                            }
+                            <button id="edit-btn-${index}" class="btn-editar">Editar</button>
+                        </div>
+                    `;
+                    conteudo.appendChild(card);
+                    
+                    card.querySelector('.transacao-header').onclick = () => {
+                        playSound('click');
+                        showOptions[transacao.id] = !showOptions[transacao.id];
+                        render();
+                    };
+                });
+            } else {
+                conteudo.innerHTML += `<div class="mensagem-vazio">${icons.empty}<p>Nenhuma transação encontrada.</p></div>`;
+            }
+            tela.appendChild(conteudo);
+
+            const addButton = document.createElement('button');
+            addButton.className = 'btn-add';
+            addButton.textContent = '+';
+            addButton.onclick = () => abrirModal('adicionarTransacao');
+            tela.appendChild(addButton);
+
+            setTimeout(() => {
+                document.getElementById('back-btn').onclick = () => history.back();
+                document.getElementById('prancheta-btn').onclick = () => navegarPara('prancheta');
+                document.getElementById('busca-detalhes-btn').onclick = () => { playSound('click'); showBuscaDetalhes = !showBuscaDetalhes; if (!showBuscaDetalhes) searchDate = ''; render(); };
+                if (showBuscaDetalhes) {
+                    document.getElementById('search-date-input').onchange = (e) => { searchDate = e.target.value; render(); };
+                }
+                transacoes.forEach((transacao, index) => {
+                    const paidBtn = document.getElementById(`paid-btn-${index}`);
+                    if (paidBtn) paidBtn.onclick = () => abrirModal('confirmarPagamento', index);
+                    
+                    const undoPaidBtn = document.getElementById(`undo-paid-btn-${index}`);
+                    if (undoPaidBtn) undoPaidBtn.onclick = () => abrirModal('desfazerPagamento', index);
+                    
+                    const editBtn = document.getElementById(`edit-btn-${index}`);
+                    if (editBtn) editBtn.onclick = () => abrirModal('editarTransacao', index);
+                });
+            }, 0);
+            
+            return tela;
+        };
+
+        const renderTelaNotificacoes = () => {
+            const tela = document.createElement('div');
+            tela.className = 'tela';
+            
+            const header = document.createElement('header');
+            header.className = 'header';
+            header.innerHTML = `
+                <button id="back-btn">${icons.arrowLeft}</button>
+                <h1 class="header-titulo">Notificações</h1>
+                <input id="data-notificacao-input" type="date" value="${dataNotificacao}" />
+            `;
+            tela.appendChild(header);
+
+            const conteudo = document.createElement('main');
+            conteudo.className = 'conteudo';
+            
+            const notificacoesDeJuros = [];
+            const jurosPagos = JSON.parse(localStorage.getItem('jurosPagos')) || {};
+            
+            const dataNotificacaoObj = new Date(dataNotificacao + 'T00:00:00');
+
+            pessoas.forEach(pessoa => {
+                (pessoa.transacoes || []).forEach(transacao => {
+                    if (!transacao.id) transacao.id = `trans-${pessoa.id}-${Date.now()}`;
+
+                    const dataVencimento = new Date(transacao.due_date + 'T00:00:00');
+
+                    if (!transacao.pago && transacao.juros > 0 && dataNotificacaoObj >= dataVencimento && dataNotificacaoObj.getDate() === dataVencimento.getDate()) {
+                        const pagamentosAnteriores = jurosPagos[transacao.id] || [];
+                        const jaFoiPago = pagamentosAnteriores.includes(dataNotificacao);
+                        notificacoesDeJuros.push({ pessoa, transacao, jaFoiPago });
+                    }
+                });
+            });
+
+            if (notificacoesDeJuros.length === 0) {
+                conteudo.innerHTML += `<div class="mensagem-vazio">${icons.empty}<p>Nenhuma notificação de juros para esta data.</p></div>`;
+            } else {
+                notificacoesDeJuros.forEach(notif => {
+                    const card = document.createElement('div');
+                    card.className = `card-notificacao ${notif.jaFoiPago ? 'pago' : ''}`;
+                    card.innerHTML = `
+                        <button class="notificacao-info" id="info-${notif.transacao.id}">
+                            <span class="icone">${notif.jaFoiPago ? icons.paid : icons.pending}</span>
+                            <div>
+                                <p><strong>${notif.pessoa.nome}</strong></p>
+                                <p class="profissao">${notif.pessoa.profissao || 'Sem profissão'}</p>
+                                <p class="notificacao-juros-valor">Juros Mensal: R$ ${notif.transacao.juros.toFixed(2).replace('.', ',')}</p>
+                            </div>
+                        </button>
+                        <div class="notificacao-botoes">
+                            ${notif.jaFoiPago 
+                                ? `<button id="desfazer-jr-${notif.transacao.id}" class="btn-desfazer-juros">Desfazer</button>`
+                                : `<button id="pagou-jr-${notif.transacao.id}" class="btn-pagou-juros">Pagou</button>`
+                            }
+                        </div>
+                    `;
+                    conteudo.appendChild(card);
+                });
+            }
+            tela.appendChild(conteudo);
+
+            setTimeout(() => {
+                document.getElementById('back-btn').onclick = () => history.back();
+                document.getElementById('data-notificacao-input').onchange = (e) => { dataNotificacao = e.target.value; render(); };
+
+                notificacoesDeJuros.forEach(notif => {
+                    document.getElementById(`info-${notif.transacao.id}`).onclick = () => {
+                        pessoaSelecionada = pessoas.find(p => p.id === notif.pessoa.id);
+                        navegarPara('detalhesPessoa');
+                    };
+                    
+                    const jurosData = { transacaoId: notif.transacao.id };
+                    if (notif.jaFoiPago) {
+                        const btn = document.getElementById(`desfazer-jr-${notif.transacao.id}`);
+                        if (btn) btn.onclick = () => abrirModal('desfazerPagamentoJuros', jurosData);
+                    } else {
+                        const btn = document.getElementById(`pagou-jr-${notif.transacao.id}`);
+                        if (btn) btn.onclick = () => abrirModal('confirmarPagamentoJuros', jurosData);
+                    }
+                });
+            }, 0);
+
+            return tela;
+        };
+        const renderTelaPrancheta = () => {
+            const tela = document.createElement('div');
+            tela.className = 'tela';
+
+            const header = document.createElement('header');
+            header.className = 'header';
+            header.innerHTML = `
+                <button id="back-btn">${icons.arrowLeft}</button>
+                <h1 class="header-titulo">Prancheta</h1>
+                <span></span>
+            `;
+            tela.appendChild(header);
+
+            const conteudo = document.createElement('main');
+            conteudo.className = 'conteudo';
+            conteudo.innerHTML = `<textarea id="notas-textarea" class="prancheta-textarea" placeholder="Suas anotações...">${pessoaSelecionada.notas || ''}</textarea>`;
+            tela.appendChild(conteudo);
+
+            setTimeout(() => {
+                document.getElementById('back-btn').onclick = () => history.back();
+                
+                document.getElementById('notas-textarea').onblur = (e) => {
+                    const pessoaIndex = pessoas.findIndex(p => p.id === pessoaSelecionada.id);
+                    if (pessoaIndex > -1) {
+                        pessoas[pessoaIndex].notas = e.target.value;
+                        pessoaSelecionada.notas = e.target.value;
+                        salvarDadosNoLocalStorage();
+                    }
+                };
+            }, 0);
+
+            return tela;
+        };
+
+        const renderTelaConfiguracoes = () => {
+             const tela = document.createElement('div');
+            tela.className = 'tela';
+
+            const header = document.createElement('header');
+            header.className = 'header';
+            header.innerHTML = `
+                <button id="back-btn">${icons.arrowLeft}</button>
+                <h1 class="header-titulo">Configurações</h1>
+                <span></span>
+            `;
+            tela.appendChild(header);
+
+            const conteudo = document.createElement('main');
+            conteudo.className = 'conteudo';
+            conteudo.innerHTML = `
+                <div class="config-card">
+                    <h2>Modo de Cálculo de Juros</h2>
+                    <div class="config-opcoes-radio">
+                        <label>
+                            <input type="radio" name="juros-mode" value="manual" ${configuracoes.modoJuros === 'manual' ? 'checked' : ''}>
+                            <span>Manual</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="juros-mode" value="automatico" ${configuracoes.modoJuros === 'automatico' ? 'checked' : ''}>
+                            <span>Automático</span>
+                        </label>
+                    </div>
+                    <div id="juros-padrao-container" class="${configuracoes.modoJuros === 'automatico' ? '' : 'hidden'}">
+                        <label for="juros-padrao-input">Taxa de Juros Padrão (%)</label>
+                        <input id="juros-padrao-input" type="number" step="0.01" value="${configuracoes.taxaJurosPadrao}" />
+                    </div>
+                </div>
+
+                <div class="config-card">
+                    <h2>Configurações de Som</h2>
+                    <div class="config-item">
+                        <label for="sound-toggle">Ativar Sons</label>
+                        <button id="sound-toggle-btn" style="font-size: 1.5rem;">${configuracoes.soundEnabled ? '🔊' : '🔇'}</button>
+                    </div>
+                    <div class="config-item">
+                        <label for="volume-slider">Volume</label>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="${configuracoes.soundVolume}">
+                    </div>
+                </div>
+
+                <div class="config-card">
+                    <h2>Gerenciamento de Dados</h2>
+                    <div class="config-botoes-geral">
+                        <button id="export-btn">Exportar Dados</button>
+                        <button id="import-btn">Importar Dados</button>
+                    </div>
+                </div>
+
+                <div class="config-card">
+                     <button id="apagar-tudo-btn" class="btn-apagar-tudo-discreto">Apagar Todos os Dados</button>
+                </div>
+
+                <div class="app-version">
+                    <p>Versão: ${appVersion}</p>
+                </div>
+            `;
+            tela.appendChild(conteudo);
+
+            setTimeout(() => {
+                document.getElementById('back-btn').onclick = () => history.back();
+                
+                // Lógica de Juros
+                document.querySelectorAll('input[name="juros-mode"]').forEach(radio => {
+                    radio.onchange = () => {
+                        playSound('click');
+                        configuracoes.modoJuros = radio.value;
+                        salvarDadosNoLocalStorage();
+                        render();
+                    };
+                });
+                if (configuracoes.modoJuros === 'automatico') {
+                    document.getElementById('juros-padrao-input').onchange = (e) => {
+                        configuracoes.taxaJurosPadrao = parseFloat(e.target.value);
+                        salvarDadosNoLocalStorage();
+                    };
+                }
+
+                // Lógica de Som
+                document.getElementById('sound-toggle-btn').onclick = () => {
+                    configuracoes.soundEnabled = !configuracoes.soundEnabled;
+                    playSound('click');
+                    salvarDadosNoLocalStorage();
+                    render();
+                };
+                document.getElementById('volume-slider').addEventListener('input', (e) => {
+                    configuracoes.soundVolume = parseFloat(e.target.value);
+                    salvarDadosNoLocalStorage();
+                });
+
+                // Lógica de Dados
+                document.getElementById('export-btn').onclick = () => { playSound('click'); handleExportarDados(); };
+                document.getElementById('import-btn').onclick = () => { playSound('click'); document.getElementById('import-file-input').click(); };
+                document.getElementById('import-file-input').onchange = handleImportarDados;
+                document.getElementById('apagar-tudo-btn').onclick = () => abrirModal('apagarTudo');
+            }, 0);
+
+            return tela;
+        };
+
+        // --- RENDERIZAÇÃO DE MODAIS ---
+        const renderModal = () => {
+            const container = document.createElement('div');
+            container.className = 'modal-container';
+            container.onclick = (e) => {
+                if (e.target === container) {
+                    modalAberto = null;
+                    render();
+                }
+            };
+
+            const conteudo = document.createElement('div');
+            conteudo.className = 'modal-conteudo';
+
+            switch (modalAberto) {
+                case 'adicionarPessoa':
+                    conteudo.innerHTML = `
+                        <h2 class="modal-titulo">Adicionar Pessoa</h2>
+                        <div class="campo">
+                            <label for="input-nome">Nome Completo *</label>
+                            <input id="input-nome" type="text" />
+                        </div>
+                        <div class="campo">
+                            <label for="input-profissao">Profissão</label>
+                            <input id="input-profissao" type="text" />
+                        </div>
+                        <div class="modal-botoes">
+                            <button id="cancel-btn" class="btn-cancelar">Cancelar</button>
+                            <button id="save-pessoa-btn" class="btn-salvar">Salvar</button>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        document.getElementById('save-pessoa-btn').onclick = handleAdicionarPessoa;
+                        document.getElementById('cancel-btn').onclick = () => { modalAberto = null; render(); };
+                    }, 0);
+                    break;
+                
+                case 'adicionarTransacao':
+                    const isAutomatic = configuracoes.modoJuros === 'automatico';
+                    conteudo.innerHTML = `
+                        <h2 class="modal-titulo">Adicionar Empréstimo</h2>
+                        <div class="campo">
+                            <label for="input-valor-emprestado">Valor Emprestado (R$)</label>
+                            <input id="input-valor-emprestado" type="number" step="0.01" />
+                        </div>
+                        ${!isAutomatic ? `
+                        <div class="campo">
+                            <label for="input-juros">Juros (R$)</label>
+                            <input id="input-juros" type="number" step="0.01" />
+                        </div>` : ''}
+                        <div class="campo">
+                            <label for="input-due-date">Data de Vencimento</label>
+                            <input id="input-due-date" type="date" value="${getLocalDateString()}" />
+                        </div>
+                         <div class="campo">
+                            <label for="input-valor-total">Valor Total a Pagar (R$)</label>
+                            <input id="input-valor-total" type="text" readonly />
+                        </div>
+                        <div class="modal-botoes">
+                            <button id="cancel-btn" class="btn-cancelar">Cancelar</button>
+                            <button id="save-transacao-btn" class="btn-salvar">Salvar</button>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        const valorEmprestadoInput = document.getElementById('input-valor-emprestado');
+                        const jurosInput = document.getElementById('input-juros');
+                        const valorTotalInput = document.getElementById('input-valor-total');
+                        const updateValorTotal = () => {
+                            const valor = parseFloat(valorEmprestadoInput.value) || 0;
+                            let juros = 0;
+                            if (isAutomatic) {
+                                juros = valor * (configuracoes.taxaJurosPadrao / 100);
+                            } else {
+                                juros = parseFloat(jurosInput.value) || 0;
+                            }
+                            valorTotalInput.value = `R$ ${(valor + juros).toFixed(2).replace('.', ',')}`;
+                        };
+                        valorEmprestadoInput.addEventListener('input', updateValorTotal);
+                        if(jurosInput) jurosInput.addEventListener('input', updateValorTotal);
+                        updateValorTotal();
+
+                        document.getElementById('save-transacao-btn').onclick = handleAdicionarTransacao;
+                        document.getElementById('cancel-btn').onclick = () => { modalAberto = null; render(); };
+                    }, 0);
+                    break;
+
+                case 'editarTransacao':
+                    const transacao = pessoaSelecionada.transacoes[transacaoParaEditar];
+                    const isAutoEdit = configuracoes.modoJuros === 'automatico';
+                    conteudo.innerHTML = `
+                        <h2 class="modal-titulo">Editar Dívida</h2>
+                         <div class="campo">
+                            <label for="input-edit-valor-emprestado">Valor Emprestado (R$)</label>
+                            <input id="input-edit-valor-emprestado" type="number" value="${transacao.valorOriginal.toFixed(2)}" step="0.01" />
+                        </div>
+                        ${!isAutoEdit ? `
+                         <div class="campo">
+                            <label for="input-edit-juros">Juros (R$)</label>
+                            <input id="input-edit-juros" type="number" value="${transacao.juros.toFixed(2)}" step="0.01" />
+                        </div>` : ''}
+                         <div class="campo">
+                            <label for="input-edit-due-date">Data de Vencimento</label>
+                            <input id="input-edit-due-date" type="date" value="${transacao.due_date}" />
+                        </div>
+                        <div class="campo">
+                            <label for="input-edit-valor-total">Valor Total a Pagar (R$)</label>
+                            <input id="input-edit-valor-total" type="text" readonly />
+                        </div>
+                        <div class="modal-botoes">
+                            <button id="cancel-btn" class="btn-cancelar">Cancelar</button>
+                            <button id="save-edit-btn" class="btn-salvar">Salvar</button>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        const valorEmprestadoInput = document.getElementById('input-edit-valor-emprestado');
+                        const jurosInput = document.getElementById('input-edit-juros');
+                        const valorTotalInput = document.getElementById('input-edit-valor-total');
+                        const updateValorTotal = () => {
+                            const valor = parseFloat(valorEmprestadoInput.value) || 0;
+                            let juros = 0;
+                            if (isAutoEdit) {
+                                juros = valor * (configuracoes.taxaJurosPadrao / 100);
+                            } else {
+                                juros = parseFloat(jurosInput.value) || 0;
+                            }
+                            valorTotalInput.value = `R$ ${(valor + juros).toFixed(2).replace('.', ',')}`;
+                        };
+                        valorEmprestadoInput.addEventListener('input', updateValorTotal);
+                        if(jurosInput) jurosInput.addEventListener('input', updateValorTotal);
+                        updateValorTotal();
+
+                        document.getElementById('save-edit-btn').onclick = handleEditarTransacao;
+                        document.getElementById('cancel-btn').onclick = () => { modalAberto = null; render(); };
+                    }, 0);
+                    break;
+
+                case 'confirmarPagamento':
+                case 'desfazerPagamento':
+                case 'apagarTudo':
+                case 'confirmarPagamentoJuros':
+                case 'desfazerPagamentoJuros':
+                    const titulos = {
+                        confirmarPagamento: 'Confirmar Pagamento',
+                        desfazerPagamento: 'Desfazer Pagamento',
+                        apagarTudo: 'Atenção!',
+                        confirmarPagamentoJuros: 'Confirmar Pagamento de Juros',
+                        desfazerPagamentoJuros: 'Desfazer Pagamento de Juros',
+                    };
+                    const mensagens = {
+                        confirmarPagamento: 'A pessoa realmente pagou o valor total desta dívida?',
+                        desfazerPagamento: 'Tem certeza que deseja marcar esta dívida como não paga?',
+                        apagarTudo: 'Esta ação irá apagar TODOS os seus dados permanentemente. Tem certeza?',
+                        confirmarPagamentoJuros: 'Confirma o pagamento dos juros para esta data?',
+                        desfazerPagamentoJuros: 'Tem certeza que deseja desfazer este pagamento de juros?',
+                    };
+                    const funcoesOk = {
+                        confirmarPagamento: () => confirmarPagamento(transacaoParaEditar),
+                        desfazerPagamento: () => handleCancelarPagamento(transacaoParaEditar),
+                        apagarTudo: handleApagarTodosOsDados,
+                        confirmarPagamentoJuros: () => confirmarPagarJuros(jurosParaConfirmar.transacaoId),
+                        desfazerPagamentoJuros: () => desfazerPagarJuros(jurosParaConfirmar.transacaoId),
+                    };
+                    conteudo.innerHTML = `
+                        <h2 class="modal-titulo">${titulos[modalAberto]}</h2>
+                        <p style="text-align:center; margin-bottom: 1.5rem; line-height: 1.6;">${mensagens[modalAberto]}</p>
+                        <div class="modal-botoes">
+                            <button id="confirm-cancel-btn" class="btn-cancelar">Cancelar</button>
+                            <button id="confirm-ok-btn" class="btn-salvar" style="${modalAberto === 'apagarTudo' ? 'background-color: var(--cor-secundaria);' : ''}">OK</button>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        document.getElementById('confirm-ok-btn').onclick = () => {
+                            funcoesOk[modalAberto]();
+                            playSound('click');
+                            modalAberto = null;
+                            jurosParaConfirmar = null;
+                            transacaoParaEditar = null;
+                            render();
+                        };
+                        document.getElementById('confirm-cancel-btn').onclick = () => { modalAberto = null; jurosParaConfirmar = null; transacaoParaEditar = null; render(); };
+                    }, 0);
+                    break;
+            }
+            container.appendChild(conteudo);
+            return container;
+        };
+        
+        // --- FUNÇÕES DE LÓGICA (HANDLERS) ---
+        
+        const handleAdicionarPessoa = () => {
+            const nome = document.getElementById('input-nome').value.trim();
+            const profissao = document.getElementById('input-profissao').value.trim();
+            if (nome === '') { alert('O nome é obrigatório!'); return; }
+            
+            const novaPessoa = {
+                id: 'pessoa-' + Date.now(),
+                nome, profissao, transacoes: [], notas: '', criadoEm: new Date().toISOString(),
+            };
+            pessoas.push(novaPessoa);
+            salvarDadosNoLocalStorage();
+            modalAberto = null;
+            playSound('click');
+            render();
+        };
+
+        const handleAdicionarTransacao = () => {
+            const valorEmprestado = parseFloat(document.getElementById('input-valor-emprestado').value);
+            const dueDate = document.getElementById('input-due-date').value;
+            let juros;
+            if (configuracoes.modoJuros === 'automatico') {
+                juros = valorEmprestado * (configuracoes.taxaJurosPadrao / 100);
+            } else {
+                juros = parseFloat(document.getElementById('input-juros').value) || 0;
+            }
+
+            if (isNaN(valorEmprestado) || valorEmprestado <= 0) { alert('O valor emprestado é inválido.'); return; }
+            if (isNaN(juros) || juros < 0) { alert('O valor dos juros é inválido.'); return; }
+            if (!dueDate) { alert('A data de vencimento é obrigatória.'); return; }
+
+            const novaTransacao = {
+                id: 'trans-' + Date.now(),
+                data: getLocalDateString(), 
+                due_date: dueDate,
+                valorOriginal: valorEmprestado,
+                juros: juros,
+                pago: false
+            };
+            
+            const pessoaIndex = pessoas.findIndex(p => p.id === pessoaSelecionada.id);
+            if (pessoaIndex > -1) {
+                if(!pessoas[pessoaIndex].transacoes) pessoas[pessoaIndex].transacoes = [];
+                pessoas[pessoaIndex].transacoes.push(novaTransacao);
+                pessoaSelecionada = pessoas[pessoaIndex];
+                salvarDadosNoLocalStorage();
+            }
+            modalAberto = null;
+            playSound('click');
+            render();
+        };
+
+        const confirmarPagarJuros = (transacaoId) => {
+            const jurosPagos = JSON.parse(localStorage.getItem('jurosPagos')) || {};
+            if (!jurosPagos[transacaoId]) jurosPagos[transacaoId] = [];
+            
+            if (!jurosPagos[transacaoId].includes(dataNotificacao)) {
+                jurosPagos[transacaoId].push(dataNotificacao);
+            }
+            localStorage.setItem('jurosPagos', JSON.stringify(jurosPagos));
+        };
+
+        const desfazerPagarJuros = (transacaoId) => {
+            const jurosPagos = JSON.parse(localStorage.getItem('jurosPagos')) || {};
+            if (jurosPagos[transacaoId]) {
+                jurosPagos[transacaoId] = jurosPagos[transacaoId].filter(d => d !== dataNotificacao);
+            }
+            localStorage.setItem('jurosPagos', JSON.stringify(jurosPagos));
+        };
+
+        const confirmarPagamento = (index) => {
+            const pessoaIndex = pessoas.findIndex(p => p.id === pessoaSelecionada.id);
+            if (pessoaIndex > -1 && pessoas[pessoaIndex].transacoes[index]) {
+                pessoas[pessoaIndex].transacoes[index].pago = true;
+                pessoaSelecionada = pessoas[pessoaIndex];
+                salvarDadosNoLocalStorage();
+            }
+        };
+
+        const handleCancelarPagamento = (index) => {
+            const pessoaIndex = pessoas.findIndex(p => p.id === pessoaSelecionada.id);
+            if (pessoaIndex > -1 && pessoas[pessoaIndex].transacoes[index]) {
+                pessoas[pessoaIndex].transacoes[index].pago = false;
+                pessoaSelecionada = pessoas[pessoaIndex];
+                salvarDadosNoLocalStorage();
+            }
+        };
+
+        const handleEditarTransacao = () => {
+            const novoValor = parseFloat(document.getElementById('input-edit-valor-emprestado').value);
+            const novoDueDate = document.getElementById('input-edit-due-date').value;
+            let novoJuros;
+            if (configuracoes.modoJuros === 'automatico') {
+                novoJuros = novoValor * (configuracoes.taxaJurosPadrao / 100);
+            } else {
+                novoJuros = parseFloat(document.getElementById('input-edit-juros').value) || 0;
+            }
+
+            if (isNaN(novoValor) || novoValor <= 0) { alert('Valor inválido.'); return; }
+            if (isNaN(novoJuros) || novoJuros < 0) { alert('Juros inválidos.'); return; }
+
+            const pessoaIndex = pessoas.findIndex(p => p.id === pessoaSelecionada.id);
+            if (pessoaIndex > -1) {
+                const transacaoOriginal = pessoas[pessoaIndex].transacoes[transacaoParaEditar];
+                pessoas[pessoaIndex].transacoes[transacaoParaEditar] = {
+                    ...transacaoOriginal,
+                    valorOriginal: novoValor,
+                    juros: novoJuros,
+                    due_date: novoDueDate,
+                };
+                pessoaSelecionada = pessoas[pessoaIndex];
+                salvarDadosNoLocalStorage();
+            }
+            modalAberto = null;
+            playSound('click');
+            render(); 
+        };
+
+        const handleApagarTodosOsDados = () => {
+            localStorage.clear();
+            pessoas = [];
+            configuracoes = { 
+                modoJuros: 'manual', 
+                taxaJurosPadrao: 2.0,
+                soundEnabled: true,
+                soundVolume: 0.2
+            };
+            alert("Todos os dados foram apagados.");
+            render();
+        };
+
+        const handleExportarDados = () => {
+            const jurosPagos = JSON.parse(localStorage.getItem('jurosPagos')) || {};
+            const dataToExport = {
+                pessoas,
+                configuracoes,
+                jurosPagos
+            };
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'caixa-mestre-backup.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        };
+
+        const handleImportarDados = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData.pessoas) && typeof importedData.configuracoes === 'object' && typeof importedData.jurosPagos === 'object') {
+                        pessoas = importedData.pessoas;
+                        configuracoes = importedData.configuracoes;
+                        localStorage.setItem('jurosPagos', JSON.stringify(importedData.jurosPagos));
+                        salvarDadosNoLocalStorage();
+                        alert('Dados importados com sucesso!');
+                        navegarPara('listaDevedores', { limparSelecao: true });
+                    } else {
+                        alert('Arquivo de backup parece ser inválido ou mal formatado.');
+                    }
+                } catch (error) {
+                    alert('Erro ao ler o arquivo de backup.');
+                    console.error("Erro na importação:", error);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = null;
+        };
+
+        // --- INICIALIZAÇÃO ---
+        const initializeLocalApp = () => {
+            carregarDadosDoLocalStorage();
+            // Define o estado inicial no histórico sem criar uma nova entrada
+            history.replaceState({ tela: telaAtual }, '', `#${telaAtual}`);
+            render();
+        };
+
+        window.onload = initializeLocalApp;
+    </script>
+    
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register("sw.js").then(() => {
+            console.log("Service Worker registrado com sucesso!");
+          }).catch(error => {
+            console.log("Falha ao registrar Service Worker:", error);
+          });
+        });
+      }
+    </script>
+</body>
+</html>

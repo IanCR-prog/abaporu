@@ -1,0 +1,50 @@
+{
+"display_override": ["window-controls-overlay"],  
+  "id": "cx/meis",
+  "name": "CaixaMestre",
+  "short_name": "Caixa Mestre",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A00B7",
+  "description": "Um aplicativo para gerenciar débitos e empréstimos de forma simples e eficaz.",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/tela-lista.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tela Principal com a Lista de Devedores"
+    },
+    {
+      "src": "screenshots/tela-detalhes.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Detalhes e Histórico de um Devedor"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Adicionar Novo Devedor",
+      "short_name": "Adicionar",
+      "description": "Abre a tela para cadastrar uma nova pessoa",
+      "url": "./index.html?action=add-person",
+      "icons": [{ "src": "icons/add.png", "sizes": "192x192" }]
+    }
+  ]
+}
